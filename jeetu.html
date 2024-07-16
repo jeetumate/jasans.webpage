@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JASANS</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #b2ebf2; /* Light green background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background-color: #bbdefb; /* Lighter blue */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 700px; /* Increased width */
+        }
+        h1 {
+            font-size: 48px;
+            font-weight: bold;
+            color: purple; /* Purple heading */
+            margin: 0;
+        }
+        h2 {
+            color: #333;
+            font-size: 24px;
+            margin: 10px 0;
+            text-decoration: underline; /* Underline the subheading */
+        }
+        .battery-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .battery {
+            font-weight: bold;
+            font-size: 18px;
+            color: #555;
+        }
+        .battery-symbol {
+            display: flex;
+            align-items: center;
+        }
+        .battery-icon {
+            width: 20px;
+            height: 10px;
+            border: 2px solid black;
+            border-radius: 2px;
+            position: relative;
+            margin-right: 5px;
+            background-color: #fff; /* Blank background */
+        }
+        .battery-icon::after {
+            content: '';
+            width: 4px;
+            height: 6px;
+            background-color: black;
+            position: absolute;
+            right: -4px;
+            top: 2px;
+        }
+        .battery-level {
+            position: absolute;
+            height: 100%;
+            background-color: transparent; /* Blank when not connected */
+        }
+        .battery-level.low {
+            background-color: red; /* Red when battery is low */
+        }
+        .start {
+            background-color: red; /* Red background */
+            color: yellow; /* Yellow text */
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border: 2px solid #ff5722; /* Border color */
+            border-radius: 5px;
+            margin: 20px; /* Margin to center */
+            font-weight: bold; /* Bold text */
+            transition: background-color 0.3s;
+        }
+        .start:hover {
+            background-color: darkred; /* Darker red on hover */
+        }
+        .about {
+            font-size: 18px;
+            color: black; /* Black text */
+            cursor: pointer;
+            background-color: #fffacd; /* Light yellow */
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-weight: bold; /* Bold text */
+            transition: background-color 0.3s;
+        }
+        .about:hover {
+            background-color: #fef68a; /* Slightly darker yellow on hover */
+        }
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(12, 30px); /* 12 columns */
+            gap: 10px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .matrix div {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #bbb;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .matrix div.selected {
+            background-color: black; /* Change color when selected */
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .confirm, .erase, .back {
+            font-weight: bold;
+            margin: 5px;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .confirm {
+            background-color: #4caf50; /* Green */
+            color: white;
+        }
+        .confirm:hover {
+            background-color: #388e3c;
+        }
+        .erase {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+        .erase:hover {
+            background-color: #d32f2f;
+        }
+        .back {
+            background-color: #2196f3; /* Blue */
+            color: white;
+        }
+        .back:hover {
+            background-color: #1976d2;
+        }
+        .info {
+            margin: 20px 0;
+            font-size: 16px;
+            display: none; /* Hidden by default */
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        #dialog {
+            display: none;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: white;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .dialog-button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .yes {
+            background-color: #4caf50; /* Green */
+            color: white;
+        }
+        .yes:hover {
+            background-color: #388e3c;
+        }
+        .no {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+        .no:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- First Page -->
+    <div id="firstPage">
+        <div class="battery-container">
+            <div class="battery main-battery">
+                <div class="battery-symbol">
+                    <div class="battery-icon">
+                        <div class="battery-level" style="width: 0%;"></div> <!-- Blank when disconnected -->
+                    </div>
+                    Main Battery
+                </div>
+            </div>
+            <div class="battery secondary-battery">
+                <div class="battery-symbol">
+                    <div class="battery-icon">
+                        <div class="battery-level" style="width: 0%;"></div> <!-- Blank when disconnected -->
+                    </div>
+                    Second Battery
+                </div>
+            </div>
+        </div>
+        
+        <h1>JASANS</h1>
+        <h2>An Autonomous Anti-collision Flexi-charge Winged Rover</h2>
+        
+        <button class="start" onclick="startRover()">START</button>
+        
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+            <button class="about" onclick="toggleRoverInfo()">About the ROVER</button>
+            <button class="about" onclick="toggleGroupInfo()">About the Group Members</button>
+        </div>
+        
+        <div class="info" id="roverInfo">
+            <h3>About the ROVER</h3>
+            <p>The rover is designed to avoid obstacles and trenches by flying over them with minimal change of path. It automatically charges using air resistance while in motion.</p>
+        </div>
+        
+        <div class="info" id="groupInfo">
+            <h3>About the Group Members</h3>
+            <p>Abhijit Khadse<br>Angha Kamdi<br>Jitendra Mate<br>Nikhil Thakre<br>Guided by Ms. Sucheta Raut</p>
+        </div>
+    </div>
+
+    <!-- Second Page -->
+    <div id="secondPage" style="display: none;">
+        <div class="battery-container">
+            <div class="battery main-battery">
+                <div class="battery-symbol">
+                    <div class="battery-icon">
+                        <div class="battery-level" style="width: 0%;"></div> <!-- Blank when disconnected -->
+                    </div>
+                    Main Battery
+                </div>
+            </div>
+            <div class="battery secondary-battery">
+                <div class="battery-symbol">
+                    <div class="battery-icon">
+                        <div class="battery-level" style="width: 0%;"></div> <!-- Blank when disconnected -->
+                    </div>
+                    Second Battery
+                </div>
+            </div>
+        </div>
+        
+        <h1>JASANS</h1>
+        <h2 style="font-size: 20px;">An Autonomous Anti-collision Flexi-charge Winged Rover</h2>
+        
+        <div class="matrix" id="matrix"></div>
+        
+        <div class="button-container">
+            <button class="confirm" onclick="confirmAction()">CONFIRM</button>
+            <button class="erase" onclick="erasePath()">ERASE</button>
+            <button class="back" onclick="goBack()">BACK</button>
+        </div>
+        
+        <div id="dialog">
+            <p>Do you want to go?</p>
+            <button class="dialog-button yes" onclick="dialogResponse(true)">Yes</button>
+            <button class="dialog-button no" onclick="dialogResponse(false)">No</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function startRover() {
+        document.getElementById('firstPage').style.display = 'none';
+        document.getElementById('secondPage').style.display = 'block';
+        initMatrix();
+    }
+
+    function initMatrix() {
+        const matrix = document.getElementById('matrix');
+        matrix.innerHTML = '';
+        for (let i = 0; i < 7 * 12; i++) { // 7x12 matrix
+            const dot = document.createElement('div');
+            dot.onclick = () => connectDots(dot);
+            matrix.appendChild(dot);
+        }
+    }
+
+    let path = [];
+
+    function connectDots(dot) {
+        dot.classList.toggle('selected');
+        if (dot.classList.contains('selected')) {
+            path.push(dot);
+        } else {
+            path = path.filter(d => d !== dot);
+        }
+    }
+
+    function toggleRoverInfo() {
+        const infoContainer = document.getElementById('roverInfo');
+        infoContainer.style.display = infoContainer.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function toggleGroupInfo() {
+        const infoContainer = document.getElementById('groupInfo');
+        infoContainer.style.display = infoContainer.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function confirmAction() {
+        document.getElementById('dialog').style.display = 'block';
+    }
+
+    function dialogResponse(confirmed) {
+        if (confirmed) {
+            alert("Confirmed!");
+        }
+        document.getElementById('dialog').style.display = 'none';
+    }
+
+    function erasePath() {
+        const dots = document.querySelectorAll('.matrix div');
+        dots.forEach(dot => dot.classList.remove('selected'));
+        path = [];
+    }
+
+    function goBack() {
+        document.getElementById('secondPage').style.display = 'none';
+        document.getElementById('firstPage').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
